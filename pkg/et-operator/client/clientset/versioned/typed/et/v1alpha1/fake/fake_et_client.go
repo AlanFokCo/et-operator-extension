@@ -17,7 +17,7 @@ limitations under the License.
 package fake
 
 import (
-	v1alpha1 "github.com/AliyunContainerService/et-operator/client/clientset/versioned/typed/et/v1alpha1"
+	v1alpha1 "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/client/clientset/versioned/typed/et/v1alpha1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )
@@ -26,20 +26,8 @@ type FakeEtV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeEtV1alpha1) EnvSpecs(namespace string) v1alpha1.EnvSpecInterface {
-	return &FakeEnvSpecs{c, namespace}
-}
-
-func (c *FakeEtV1alpha1) ScaleInSpecs(namespace string) v1alpha1.ScaleInSpecInterface {
-	return &FakeScaleInSpecs{c, namespace}
-}
-
 func (c *FakeEtV1alpha1) TrainingJobs(namespace string) v1alpha1.TrainingJobInterface {
 	return &FakeTrainingJobs{c, namespace}
-}
-
-func (c *FakeEtV1alpha1) TrainingJobSpecs(namespace string) v1alpha1.TrainingJobSpecInterface {
-	return &FakeTrainingJobSpecs{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

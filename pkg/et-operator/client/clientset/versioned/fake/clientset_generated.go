@@ -17,9 +17,9 @@ limitations under the License.
 package fake
 
 import (
-	clientset "github.com/AliyunContainerService/et-operator/client/clientset/versioned"
-	etv1alpha1 "github.com/AliyunContainerService/et-operator/client/clientset/versioned/typed/et/v1alpha1"
-	fakeetv1alpha1 "github.com/AliyunContainerService/et-operator/client/clientset/versioned/typed/et/v1alpha1/fake"
+	clientset "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/client/clientset/versioned"
+	etv1alpha1 "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/client/clientset/versioned/typed/et/v1alpha1"
+	fakeetv1alpha1 "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/client/clientset/versioned/typed/et/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

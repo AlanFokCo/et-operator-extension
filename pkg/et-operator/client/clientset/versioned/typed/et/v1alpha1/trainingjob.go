@@ -17,10 +17,11 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
-	v1alpha1 "github.com/AliyunContainerService/et-operator/apis/et/v1alpha1"
-	scheme "github.com/AliyunContainerService/et-operator/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/apis/et/v1alpha1"
+	scheme "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -35,15 +36,15 @@ type TrainingJobsGetter interface {
 
 // TrainingJobInterface has methods to work with TrainingJob resources.
 type TrainingJobInterface interface {
-	Create(*v1alpha1.TrainingJob) (*v1alpha1.TrainingJob, error)
-	Update(*v1alpha1.TrainingJob) (*v1alpha1.TrainingJob, error)
-	UpdateStatus(*v1alpha1.TrainingJob) (*v1alpha1.TrainingJob, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.TrainingJob, error)
-	List(opts v1.ListOptions) (*v1alpha1.TrainingJobList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.TrainingJob, err error)
+	Create(ctx context.Context, trainingJob *v1alpha1.TrainingJob, opts v1.CreateOptions) (*v1alpha1.TrainingJob, error)
+	Update(ctx context.Context, trainingJob *v1alpha1.TrainingJob, opts v1.UpdateOptions) (*v1alpha1.TrainingJob, error)
+	UpdateStatus(ctx context.Context, trainingJob *v1alpha1.TrainingJob, opts v1.UpdateOptions) (*v1alpha1.TrainingJob, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.TrainingJob, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.TrainingJobList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.TrainingJob, err error)
 	TrainingJobExpansion
 }
 
@@ -62,7 +63,7 @@ func newTrainingJobs(c *EtV1alpha1Client, namespace string) *trainingJobs {
 }
 
 // Get takes name of the trainingJob, and returns the corresponding trainingJob object, and an error if there is any.
-func (c *trainingJobs) Get(name string, options v1.GetOptions) (result *v1alpha1.TrainingJob, err error) {
+func (c *trainingJobs) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.TrainingJob, err error) {
 	result = &v1alpha1.TrainingJob{}
 	err = c.client.Get().
 		Namespace(c.ns).
@@ -75,7 +76,7 @@ func (c *trainingJobs) Get(name string, options v1.GetOptions) (result *v1alpha1
 }
 
 // List takes label and field selectors, and returns the list of TrainingJobs that match those selectors.
-func (c *trainingJobs) List(opts v1.ListOptions) (result *v1alpha1.TrainingJobList, err error) {
+func (c *trainingJobs) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.TrainingJobList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -92,7 +93,7 @@ func (c *trainingJobs) List(opts v1.ListOptions) (result *v1alpha1.TrainingJobLi
 }
 
 // Watch returns a watch.Interface that watches the requested trainingJobs.
-func (c *trainingJobs) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *trainingJobs) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -107,11 +108,12 @@ func (c *trainingJobs) Watch(opts v1.ListOptions) (watch.Interface, error) {
 }
 
 // Create takes the representation of a trainingJob and creates it.  Returns the server's representation of the trainingJob, and an error, if there is any.
-func (c *trainingJobs) Create(trainingJob *v1alpha1.TrainingJob) (result *v1alpha1.TrainingJob, err error) {
+func (c *trainingJobs) Create(ctx context.Context, trainingJob *v1alpha1.TrainingJob, opts v1.CreateOptions) (result *v1alpha1.TrainingJob, err error) {
 	result = &v1alpha1.TrainingJob{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("trainingjobs").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(trainingJob).
 		Do().
 		Into(result)
@@ -119,12 +121,13 @@ func (c *trainingJobs) Create(trainingJob *v1alpha1.TrainingJob) (result *v1alph
 }
 
 // Update takes the representation of a trainingJob and updates it. Returns the server's representation of the trainingJob, and an error, if there is any.
-func (c *trainingJobs) Update(trainingJob *v1alpha1.TrainingJob) (result *v1alpha1.TrainingJob, err error) {
+func (c *trainingJobs) Update(ctx context.Context, trainingJob *v1alpha1.TrainingJob, opts v1.UpdateOptions) (result *v1alpha1.TrainingJob, err error) {
 	result = &v1alpha1.TrainingJob{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("trainingjobs").
 		Name(trainingJob.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(trainingJob).
 		Do().
 		Into(result)
@@ -133,14 +136,14 @@ func (c *trainingJobs) Update(trainingJob *v1alpha1.TrainingJob) (result *v1alph
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *trainingJobs) UpdateStatus(trainingJob *v1alpha1.TrainingJob) (result *v1alpha1.TrainingJob, err error) {
+func (c *trainingJobs) UpdateStatus(ctx context.Context, trainingJob *v1alpha1.TrainingJob, opts v1.UpdateOptions) (result *v1alpha1.TrainingJob, err error) {
 	result = &v1alpha1.TrainingJob{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("trainingjobs").
 		Name(trainingJob.Name).
 		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(trainingJob).
 		Do().
 		Into(result)
@@ -148,40 +151,41 @@ func (c *trainingJobs) UpdateStatus(trainingJob *v1alpha1.TrainingJob) (result *
 }
 
 // Delete takes name of the trainingJob and deletes it. Returns an error if one occurs.
-func (c *trainingJobs) Delete(name string, options *v1.DeleteOptions) error {
+func (c *trainingJobs) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("trainingjobs").
 		Name(name).
-		Body(options).
+		Body(&opts).
 		Do().
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *trainingJobs) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *trainingJobs) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("trainingjobs").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
+		Body(&opts).
 		Do().
 		Error()
 }
 
 // Patch applies the patch and returns the patched trainingJob.
-func (c *trainingJobs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.TrainingJob, err error) {
+func (c *trainingJobs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.TrainingJob, err error) {
 	result = &v1alpha1.TrainingJob{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("trainingjobs").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
 		Do().
 		Into(result)

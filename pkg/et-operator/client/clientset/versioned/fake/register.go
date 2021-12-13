@@ -17,7 +17,7 @@ limitations under the License.
 package fake
 
 import (
-	etv1alpha1 "github.com/AliyunContainerService/et-operator/apis/et/v1alpha1"
+	etv1alpha1 "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/apis/et/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

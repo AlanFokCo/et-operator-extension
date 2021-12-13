@@ -17,17 +17,14 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/AliyunContainerService/et-operator/apis/et/v1alpha1"
-	"github.com/AliyunContainerService/et-operator/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/apis/et/v1alpha1"
+	"github.com/AlanFokCo/et-operator-extension/pkg/et-operator/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
 type EtV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	EnvSpecsGetter
-	ScaleInSpecsGetter
 	TrainingJobsGetter
-	TrainingJobSpecsGetter
 }
 
 // EtV1alpha1Client is used to interact with features provided by the et group.
@@ -35,20 +32,8 @@ type EtV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *EtV1alpha1Client) EnvSpecs(namespace string) EnvSpecInterface {
-	return newEnvSpecs(c, namespace)
-}
-
-func (c *EtV1alpha1Client) ScaleInSpecs(namespace string) ScaleInSpecInterface {
-	return newScaleInSpecs(c, namespace)
-}
-
 func (c *EtV1alpha1Client) TrainingJobs(namespace string) TrainingJobInterface {
 	return newTrainingJobs(c, namespace)
-}
-
-func (c *EtV1alpha1Client) TrainingJobSpecs(namespace string) TrainingJobSpecInterface {
-	return newTrainingJobSpecs(c, namespace)
 }
 
 // NewForConfig creates a new EtV1alpha1Client for the given config.
@@ -80,7 +65,7 @@ func New(c rest.Interface) *EtV1alpha1Client {
 }
 
 func setConfigDefaults(config *rest.Config) error {
-	gv := v1alpha1.SchemeGroupVersion
+	gv := v1alpha1.GroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
 	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()

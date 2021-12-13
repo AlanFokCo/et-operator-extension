@@ -5,17 +5,16 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog"
 	"k8s.io/sample-controller/pkg/signals"
 
+	"github.com/AlanFokCo/et-operator-extension/cmd/app/options"
+	"github.com/AlanFokCo/et-operator-extension/pkg/controller"
+	etjobv1alpha1 "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/apis/et/v1alpha1"
+	etjobversioned "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/client/clientset/versioned"
+	etjobinformers "github.com/AlanFokCo/et-operator-extension/pkg/et-operator/client/informers/externalversions"
 	"github.com/kube-queue/api/pkg/apis/scheduling/v1alpha1"
 	queueversioned "github.com/kube-queue/api/pkg/client/clientset/versioned"
 	queueinformers "github.com/kube-queue/api/pkg/client/informers/externalversions"
-	"github.com/kube-queue/tf-operator-extension/cmd/app/options"
-	"github.com/kube-queue/tf-operator-extension/pkg/contorller"
-	tfjobv1 "github.com/kube-queue/tf-operator-extension/pkg/tf-operator/apis/tensorflow/v1"
-	tfjobversioned "github.com/kube-queue/tf-operator-extension/pkg/tf-operator/client/clientset/versioned"
-	tfjobinformers "github.com/kube-queue/tf-operator-extension/pkg/tf-operator/client/informers/externalversions"
 	"k8s.io/klog/v2"
 )
 
@@ -42,22 +41,22 @@ func Run(opt *options.ServerOption) error {
 		return err
 	}
 
-	tfJobClient, err := tfjobversioned.NewForConfig(restConfig)
+	etJobClient, err := etjobversioned.NewForConfig(restConfig)
 	if err != nil {
 		return err
 	}
 
 	queueInformerFactory := queueinformers.NewSharedInformerFactory(queueClient, 0)
 	queueInformer := queueInformerFactory.Scheduling().V1alpha1().QueueUnits().Informer()
-	tfJobInformerFactory := tfjobinformers.NewSharedInformerFactory(tfJobClient, 0)
-	tfJobInformer := tfJobInformerFactory.Kubeflow().V1().TFJobs().Informer()
+	etJobInformerFactory := etjobinformers.NewSharedInformerFactory(etJobClient, 0)
+	etJobInformer := etJobInformerFactory.Et().V1alpha1().TrainingJobs().Informer()
 
-	tfExtensionController := contorller.NewTFExtensionController(
+	etExtensionController := contorller.NewETExtensionController(
 		k8sClientSet,
 		queueInformerFactory.Scheduling().V1alpha1().QueueUnits(),
 		queueClient,
-		tfJobInformerFactory.Kubeflow().V1().TFJobs(),
-		tfJobClient)
+		etJobInformerFactory.Et().V1alpha1().TrainingJobs(),
+		etJobClient)
 
 	queueInformer.AddEventHandler(
 		cache.FilteringResourceEventHandler{
@@ -75,27 +74,27 @@ func Run(opt *options.ServerOption) error {
 				}
 			},
 			Handler: cache.ResourceEventHandlerFuncs{
-				AddFunc:    tfExtensionController.AddQueueUnit,
-				UpdateFunc: tfExtensionController.UpdateQueueUnit,
-				DeleteFunc: tfExtensionController.DeleteQueueUnit,
+				AddFunc:    etExtensionController.AddQueueUnit,
+				UpdateFunc: etExtensionController.UpdateQueueUnit,
+				DeleteFunc: etExtensionController.DeleteQueueUnit,
 			},
 		},
 	)
 
-	tfJobInformer.AddEventHandler(
+	etJobInformer.AddEventHandler(
 		cache.FilteringResourceEventHandler{
 			FilterFunc: func(obj interface{}) bool {
 				switch obj.(type) {
-				case *tfjobv1.TFJob:
+				case *etjobv1alpha1.TrainingJob:
 					return true
 				default:
 					return false
 				}
 			},
 			Handler: cache.ResourceEventHandlerFuncs{
-				AddFunc:    tfExtensionController.AddTFJob,
-				UpdateFunc: tfExtensionController.UpdateTFJob,
-				DeleteFunc: tfExtensionController.DeleteTFJob,
+				AddFunc:    etExtensionController.AddETJob,
+				UpdateFunc: etExtensionController.UpdateETJob,
+				DeleteFunc: etExtensionController.DeleteETJob,
 			},
 		},
 	)
@@ -103,9 +102,9 @@ func Run(opt *options.ServerOption) error {
 	// start queueunit informer
 	go queueInformerFactory.Start(stopCh)
 	// start tfjob informer
-	go tfJobInformerFactory.Start(stopCh)
+	go etJobInformerFactory.Start(stopCh)
 
-	err = tfExtensionController.Run(2, stopCh)
+	err = etExtensionController.Run(2, stopCh)
 	if err != nil {
 		klog.Fatalf("Error running tfExtensionController", err.Error())
 		return err
